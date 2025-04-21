@@ -1,8 +1,6 @@
 package com.bomscoob;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) {
@@ -11,33 +9,26 @@ public class Main {
         int amount = scanner.nextInt();
         scanner.nextLine();
 
-        Map<Integer, Integer> banknotes = new LinkedHashMap<>();
-        banknotes.put(1000, 10);
-        banknotes.put(500, 10);
-        banknotes.put(100, 2);
-        banknotes.put(50, 10);
-        banknotes.put(20, 10);
-
+        Map<Integer, Integer> banknotes = setupBanknotes();
         System.out.println("Available banknotes : " + banknotes);
 
         Map<Integer, Integer> results = new LinkedHashMap<>();
         for (var banknote : banknotes.entrySet()) {
-            System.out.println(banknote.getKey() + " : " + banknote.getValue());
             if (amount >= banknote.getKey()) {
                 int numberOfBanknote = calNumberOfCash(amount, banknote.getKey());
 
                 // validate banknotes
-                if (numberOfBanknote >= banknote.getValue()) {
+                if (isNotValidNumberBanknoteAvailable(numberOfBanknote, banknote.getValue())) {
                     int validBanknote = banknote.getValue();
-                    amount = amount - validBanknote * banknote.getKey();
+                    amount -= validBanknote * banknote.getKey();
 
-                    System.out.println(amount);
+                    // update bank available
                     banknotes.replace(banknote.getKey(), 0);
                     results.put(banknote.getKey(), validBanknote);
                     continue;
                 }
                 // update amount
-                amount = amount % banknote.getKey();
+                amount %= banknote.getKey();
 
                 // update bank available
                 banknotes.replace(banknote.getKey(), banknote.getValue() - numberOfBanknote);
@@ -52,6 +43,20 @@ public class Main {
 
     private static int calNumberOfCash(int amount, int divider) {
         return amount / divider;
+    }
+
+    private static boolean isNotValidNumberBanknoteAvailable(int numberOfBanknote, int availableBanknote) {
+        return numberOfBanknote > availableBanknote;
+    }
+
+    private static Map<Integer, Integer> setupBanknotes() {
+        Map<Integer, Integer> banknotes = new LinkedHashMap<>();
+        banknotes.put(1000, 10);
+        banknotes.put(500, 10);
+        banknotes.put(100, 2);
+        banknotes.put(50, 10);
+        banknotes.put(20, 10);
+        return banknotes;
     }
 
 }
