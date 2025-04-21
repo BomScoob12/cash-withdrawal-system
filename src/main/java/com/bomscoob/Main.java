@@ -1,57 +1,53 @@
 package com.bomscoob;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        System.out.print("Input number you need to deposit : ");
+        System.out.print("Input number you need to withdraw : ");
         int amount = scanner.nextInt();
         scanner.nextLine();
-        Map<Integer, Integer> output = new HashMap<>();
 
-        if (amount >= 1000) {
-            int n = calNumberOfCash(amount, 1000);
-            amount %= 1000;
-            output.put(1000, n);
-        }
-        if (amount >= 500) {
-            int n = calNumberOfCash(amount, 500);
-            amount %= 500;
-            output.put(500, n);
-        }
-        if (amount >= 100) {
-            if (amount > 200) {
-                int n = 2;
-                amount = amount - 200;
-                output.put(100, n);
+        Map<Integer, Integer> banknotes = new LinkedHashMap<>();
+        banknotes.put(1000, 10);
+        banknotes.put(500, 10);
+        banknotes.put(100, 2);
+        banknotes.put(50, 10);
+        banknotes.put(20, 10);
+
+        System.out.println("Available banknotes : " + banknotes);
+
+        Map<Integer, Integer> results = new LinkedHashMap<>();
+        for (var banknote : banknotes.entrySet()) {
+            System.out.println(banknote.getKey() + " : " + banknote.getValue());
+            if (amount >= banknote.getKey()) {
+                int numberOfBanknote = calNumberOfCash(amount, banknote.getKey());
+
+                // validate banknotes
+                if (numberOfBanknote >= banknote.getValue()) {
+                    int validBanknote = banknote.getValue();
+                    amount = amount - validBanknote * banknote.getKey();
+
+                    System.out.println(amount);
+                    banknotes.replace(banknote.getKey(), 0);
+                    results.put(banknote.getKey(), validBanknote);
+                    continue;
+                }
+                // update amount
+                amount = amount % banknote.getKey();
+
+                // update bank available
+                banknotes.replace(banknote.getKey(), banknote.getValue() - numberOfBanknote);
+                results.put(banknote.getKey(), numberOfBanknote);
             } else {
-                int n = calNumberOfCash(amount, 100);
-                amount %= 100;
-                output.put(100, n);
+                results.put(banknote.getKey(), 0);
             }
         }
-        if (amount >= 50) {
-            int n = calNumberOfCash(amount, 50);
-            amount %= 50;
-            output.put(50, n);
-        }
-        if (amount >= 20) {
-            int n = calNumberOfCash(amount, 20);
-            amount %= 20;
-            output.put(20, n);
-        }
-        if (amount >= 10) {
-            int n = calNumberOfCash(amount, 10);
-            amount %= 10;
-            output.put(10, n);
-        }
-
         System.out.printf("Total remaining : %d\n", amount);
-
-        output.entrySet().forEach(System.out::println);
+        results.entrySet().forEach(System.out::println);
     }
 
     private static int calNumberOfCash(int amount, int divider) {
